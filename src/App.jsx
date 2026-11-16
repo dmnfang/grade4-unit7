@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { buildRounds, fmt, shuffle } from './data.js';
+import { buildRounds, fmt, imagesReady, shuffle } from './data.js';
 import Item, { ItemGrid } from './Item.jsx';
 import { installSound, sound, useSoundSettings } from './sound.js';
 
@@ -93,10 +93,15 @@ export default function App() {
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [results, setResults] = useState([]);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   const t0 = useRef(0);
   const { sfxOn, toggleSfx } = useSoundSettings();
 
   useEffect(() => installSound(), []);
+
+  useEffect(() => {
+    imagesReady.then(() => setImagesLoaded(true));
+  }, []);
 
   useEffect(() => {
     if (screen === 'scores') sound.play('allDone');
@@ -176,7 +181,9 @@ export default function App() {
                 ))}
               </Block>
             </div>
-            <button className="launch-btn" onClick={() => startTeam(0)}>Start</button>
+            <button className="launch-btn" disabled={!imagesLoaded} onClick={() => startTeam(0)}>
+              {imagesLoaded ? 'Start' : 'Loading images…'}
+            </button>
           </div>
         </div>
       </div>

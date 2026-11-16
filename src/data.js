@@ -45,6 +45,24 @@ export function imageFor(id) {
   return found[`./images/${id}.webp`] || found[`./images/${id}.png`] || null;
 }
 
+// Start loading and decoding every image the moment the app opens, so none pop in during play.
+// Resolves when they're all ready, or after 8s so a slow or broken file never blocks the game.
+const kept = [];
+export const imagesReady = (() => {
+  const urls = Object.values(found);
+  if (!urls.length) return Promise.resolve();
+  const loads = urls.map(
+    (src) =>
+      new Promise((resolve) => {
+        const img = new Image();
+        img.src = src;
+        kept.push(img);
+        (img.decode ? img.decode() : Promise.resolve()).catch(() => {}).then(resolve);
+      })
+  );
+  return Promise.race([Promise.all(loads), new Promise((r) => setTimeout(r, 8000))]);
+})();
+
 export function shuffle(list) {
   const a = [...list];
   for (let i = a.length - 1; i > 0; i--) {

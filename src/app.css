@@ -317,6 +317,7 @@
   font-weight: 800;
 }
 .toggle-pill.active { background: var(--accent); color: var(--text-primary); }
+.launch-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .launch-btn {
   flex-shrink: 0;
   height: 64px;
