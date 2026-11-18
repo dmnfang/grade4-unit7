@@ -94,7 +94,10 @@ export default function App() {
   const [elapsed, setElapsed] = useState(0);
   const [results, setResults] = useState([]);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [roundLimit, setRoundLimit] = useState('open'); // one-team mode: 'open' or a number
+  const [roundNo, setRoundNo] = useState(1);
   const t0 = useRef(0);
+  const solo = teamCount === 1;
   const { sfxOn, toggleSfx } = useSoundSettings();
 
   useEffect(() => installSound(), []);
@@ -113,8 +116,9 @@ export default function App() {
     return () => clearInterval(id);
   }, [running]);
 
-  const startTeam = (i) => {
+  const startTeam = (i, round = 1) => {
     setTeam(i);
+    setRoundNo(round);
     setPair(0);
     setRounds(buildRounds(players));
     setElapsed(0);
@@ -132,7 +136,7 @@ export default function App() {
     const final = performance.now() - t0.current;
     setRunning(false);
     setElapsed(final);
-    setResults((r) => [...r, { team, time: final, rounds }]);
+    setResults((r) => [...r, { team, roundNo, time: final, rounds }]);
     setScreen('finish');
     sound.play('celebration');
   };
@@ -175,6 +179,14 @@ export default function App() {
                   <Pill key={n} active={teamCount === n} onClick={() => setTeamCount(n)}>{n}</Pill>
                 ))}
               </Block>
+              {solo && (
+                <Block label="Rounds">
+                  <Pill active={roundLimit === 'open'} onClick={() => setRoundLimit('open')}>Unlimited</Pill>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Pill key={n} active={roundLimit === n} onClick={() => setRoundLimit(n)}>{n}</Pill>
+                  ))}
+                </Block>
+              )}
               <Block label="Players per Team">
                 {PLAYER_OPTIONS.map((n) => (
                   <Pill key={n} active={players === n} onClick={() => setPlayers(n)}>{n}</Pill>
@@ -207,7 +219,7 @@ export default function App() {
     return (
       <>
         <div className="topbar">
-          <div className="title">Team {team + 1}</div>
+          <div className="title">{solo ? `Round ${roundNo}` : `Team ${team + 1}`}</div>
           <Pips total={players} current={pair} />
           <div className="topbar-right">
             {!running && (
@@ -248,10 +260,11 @@ export default function App() {
   /* ---------- finish ---------- */
   if (screen === 'finish') {
     const isLast = team + 1 >= teamCount;
+    const atLimit = roundLimit !== 'open' && roundNo >= roundLimit;
     return (
       <>
         <div className="topbar">
-          <div className="title">Team {team + 1}</div>
+          <div className="title">{solo ? `Round ${roundNo}` : `Team ${team + 1}`}</div>
           <Pips total={players} current={players} allDone />
           <div className="topbar-right"><SettingsBtn onConfirm={newGame} /></div>
         </div>
@@ -263,16 +276,24 @@ export default function App() {
           </div>
         </div>
         <div className="go-bar">
-          <button className="big-btn" data-sound={isLast ? 'targetSelect' : 'modalOpen'} onClick={nextTeam}>
-            {isLast ? 'Display scores' : 'Start next team'}
-          </button>
+          {solo && !atLimit ? (
+            <>
+              <button className="big-btn" data-sound="modalOpen" onClick={() => startTeam(0, roundNo + 1)}>Revenge round</button>
+              <button className="big-btn secondary" data-sound="targetSelect" onClick={() => setScreen('scores')}>End game</button>
+            </>
+          ) : (
+            <button className="big-btn" data-sound={isLast ? 'targetSelect' : 'modalOpen'} onClick={nextTeam}>
+              {isLast ? 'Display scores' : 'Start next team'}
+            </button>
+          )}
         </div>
       </>
     );
   }
 
   /* ---------- scoreboard ---------- */
-  const ranked = [...results].sort((x, y) => x.time - y.time);
+  const ranked = solo ? results : [...results].sort((x, y) => x.time - y.time);
+  const fastest = Math.min(...results.map((r) => r.time));
   return (
     <>
       <div className="topbar">
@@ -284,13 +305,20 @@ export default function App() {
       </div>
       <div className="body">
         <ol className="score-list">
-          {ranked.map((r, i) => (
-            <li key={r.team} className={`score-row ${i === 0 ? 'first' : ''}`}>
-              <span className="rank">{i + 1}</span>
-              <span>Team {r.team + 1}</span>
-              <span className="score-time">{fmt(r.time)}</span>
-            </li>
-          ))}
+          {ranked.map((r, i) =>
+            solo ? (
+              <li key={r.roundNo} className={`score-row solo ${r.time === fastest ? 'fastest' : ''}`}>
+                <span>Round {r.roundNo}</span>
+                <span className="score-time">{fmt(r.time)}</span>
+              </li>
+            ) : (
+              <li key={r.team} className={`score-row ${i === 0 ? 'first' : ''}`}>
+                <span className="rank">{i + 1}</span>
+                <span>Team {r.team + 1}</span>
+                <span className="score-time">{fmt(r.time)}</span>
+              </li>
+            )
+          )}
         </ol>
       </div>
     </>

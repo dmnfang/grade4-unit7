@@ -197,6 +197,7 @@
   font-weight: 700;
 }
 .big-btn.finish { background: var(--finish); }
+.big-btn.secondary { flex: none; min-width: 280px; background: var(--surface-panel); color: var(--text-secondary); }
 .big-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ---- finish ---- */
@@ -282,6 +283,14 @@
   font-weight: 600;
 }
 .score-row.first { border-color: var(--accent); border-width: 3px; padding: 11px 19px; }
+.score-row.solo { grid-template-columns: 1fr auto; }
+.score-row.fastest {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  border-width: 3px;
+  padding: 11px 19px;
+  color: var(--accent-text);
+}
 .rank { color: var(--text-muted); }
 .score-row.first .rank { color: var(--accent-text); }
 .score-time { font-variant-numeric: tabular-nums; }
