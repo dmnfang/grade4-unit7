@@ -82,6 +82,13 @@ export function buildRounds(count) {
   }));
 }
 
+// One random round (used by Rally, which never runs out). Avoids repeating the previous item.
+export function makeRound(avoidId) {
+  const pool = ITEMS.filter((i) => i.id !== avoidId);
+  const item = pool[Math.floor(Math.random() * pool.length)];
+  return { item, qty: MIN_QTY + Math.floor(Math.random() * (MAX_QTY - MIN_QTY + 1)) };
+}
+
 export function fmt(ms) {
   const t = Math.floor(ms / 100);
   const m = Math.floor(t / 600);
