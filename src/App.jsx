@@ -10,7 +10,7 @@ const PLAYER_OPTIONS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const FORMATS = [['class', 'Class'], ['pairs', 'Pairs'], ['groups', 'Groups']];
 const PAIR_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 const GROUP_OPTIONS = [2, 3, 4, 5, 6, 7, 8];
-const DURATIONS = [[60, '1 min'], [120, '2 min'], [180, '3 min']];
+const DURATIONS = [[30, '30 sec'], [60, '1 min'], [120, '2 min'], [180, '3 min']];
 
 const fmtCount = (ms) => {
   const s = Math.ceil(ms / 1000);
