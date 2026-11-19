@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { buildRounds, fmt, imagesReady, shuffle } from './data.js';
 import Item, { ItemGrid } from './Item.jsx';
+import FullscreenBtn from './Fullscreen.jsx';
 import { installSound, sound, useSoundSettings } from './sound.js';
 
 const TEAM_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -52,33 +53,57 @@ function Pips({ total, current, allDone = false }) {
   );
 }
 
+// Biggest square size at which n copies fit inside w x h once they wrap.
+function fitSize(n, w, h, gap = 4) {
+  for (let s = 120; s >= 20; s -= 2) {
+    const cols = Math.max(1, Math.floor((w + gap) / (s + gap)));
+    const rows = Math.ceil(n / cols);
+    if (rows * (s + gap) - gap <= h) return s;
+  }
+  return 20;
+}
+
 function Collage({ rounds }) {
-  const cells = useMemo(() => {
+  const ref = useRef(null);
+  const [box, setBox] = useState(null);
+
+  // Measure the real space the collage has, so it fits on any screen size.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const measure = () => setBox({ w: el.clientWidth - 16, h: el.clientHeight - 16 });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const list = useMemo(() => {
     const all = rounds.flatMap((r) => Array.from({ length: r.qty }, () => r.item));
-    const w = window.innerWidth - 120;
-    const h = Math.max(160, window.innerHeight - 500);
-    const size = Math.max(24, Math.min(120, Math.floor(Math.sqrt((w * h) / all.length) * 0.9)));
-    return { size, h, list: shuffle(all).map((item) => ({ item, rot: Math.round(Math.random() * 24 - 12) })) };
+    return shuffle(all).map((item) => ({ item, rot: Math.round(Math.random() * 24 - 12) }));
   }, [rounds]);
 
+  const size = box ? fitSize(list.length, box.w, box.h) : 0;
+
   useEffect(() => {
+    if (!size) return;
     const ids = [];
-    for (let i = 0; i < Math.min(cells.list.length, 40); i += 4) {
+    for (let i = 0; i < Math.min(list.length, 40); i += 4) {
       ids.push(setTimeout(() => sound.play('tilePop', { rate: [0.9, 1.4], minGap: 30 }), Math.min(i * 25, 1000)));
     }
     return () => ids.forEach(clearTimeout);
-  }, [cells]);
+  }, [list, size > 0]);
 
   return (
-    <div className="collage" style={{ height: `${cells.h}px` }}>
-      {cells.list.map(({ item, rot }, i) => (
-        <Item
-          key={i}
-          item={item}
-          className="cell"
-          style={{ '--s': `${cells.size}px`, '--rot': `${rot}deg`, animationDelay: `${Math.min(i * 25, 1000)}ms` }}
-        />
-      ))}
+    <div className="collage" ref={ref}>
+      {size > 0 &&
+        list.map(({ item, rot }, i) => (
+          <Item
+            key={i}
+            item={item}
+            className="cell"
+            style={{ '--s': `${size}px`, '--rot': `${rot}deg`, animationDelay: `${Math.min(i * 25, 1000)}ms` }}
+          />
+        ))}
     </div>
   );
 }
@@ -167,6 +192,7 @@ export default function App() {
               {sfxOn ? '🔊' : '🔇'}
             </button>
             <a className="nav-btn back-home-btn" href="https://dmnfang.github.io">Home</a>
+            <FullscreenBtn />
           </div>
         </div>
 
@@ -226,6 +252,7 @@ export default function App() {
               <button className="topbar-action" data-sound="launch" onClick={startTimer}>Start timer</button>
             )}
             <SettingsBtn onConfirm={newGame} />
+            <FullscreenBtn />
           </div>
         </div>
 
@@ -266,7 +293,10 @@ export default function App() {
         <div className="topbar">
           <div className="title">{solo ? `Round ${roundNo}` : `Team ${team + 1}`}</div>
           <Pips total={players} current={players} allDone />
-          <div className="topbar-right"><SettingsBtn onConfirm={newGame} /></div>
+          <div className="topbar-right">
+            <SettingsBtn onConfirm={newGame} />
+            <FullscreenBtn />
+          </div>
         </div>
         <div className="body">
           <div className="collage-panel">
@@ -301,6 +331,7 @@ export default function App() {
         <span />
         <div className="topbar-right">
           <SettingsBtn onConfirm={newGame} />
+          <FullscreenBtn />
         </div>
       </div>
       <div className="body">
