@@ -368,9 +368,16 @@ button:focus-visible { outline: 3px solid var(--text-primary); outline-offset: 2
   border: 2px solid var(--stroke-default);
   border-radius: var(--r-lg);
   text-align: center;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
-.mode-card:active { border-color: var(--accent); }
+.mode-card.is-attack { --mode: var(--sun-500); }
+.mode-card.is-rally  { --mode: var(--sky-500); }
+.mode-card:active { border-color: var(--mode); box-shadow: 0 0 0 1px var(--mode); transform: none; }
+/* hover only where there is a real pointer, so touch screens don't get a stuck hover */
+@media (hover: hover) {
+  .mode-card:hover { border-color: var(--mode); box-shadow: 0 0 0 1px var(--mode); transform: translateY(-4px); }
+  .mode-card:hover .mode-icon { transform: scale(1.06); }
+}
 .mode-icon {
   display: grid;
   place-items: center;
@@ -380,6 +387,7 @@ button:focus-visible { outline: 3px solid var(--text-primary); outline-offset: 2
   font-size: clamp(40px, 11vh, 88px);
   line-height: 1;
 }
+.mode-icon { transition: transform 0.15s; }
 .mode-icon.attack { background: var(--sun-100); }
 .mode-icon.rally  { background: var(--sky-100); }
 .mode-name {

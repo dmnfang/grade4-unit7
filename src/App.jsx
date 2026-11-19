@@ -302,12 +302,12 @@ export default function App() {
           </div>
         </div>
         <div className="modes-body">
-          <button className="mode-card" data-sound="modalOpen" onClick={() => chooseMode('attack')}>
+          <button className="mode-card is-attack" data-sound="modalOpen" onClick={() => chooseMode('attack')}>
             <span className="mode-icon attack">⏱️</span>
             <span className="mode-name">Time Attack</span>
             <span className="mode-desc">Race through the whole conversation chain as fast as you can.</span>
           </button>
-          <button className="mode-card" data-sound="modalOpen" onClick={() => chooseMode('rally')}>
+          <button className="mode-card is-rally" data-sound="modalOpen" onClick={() => chooseMode('rally')}>
             <span className="mode-icon rally">🎾</span>
             <span className="mode-name">Rally</span>
             <span className="mode-desc">How many Q&amp;As can you finish before the clock runs out?</span>
@@ -326,8 +326,7 @@ export default function App() {
           <span />
           <div className="topbar-right">
             <SoundBtn sfxOn={sfxOn} toggleSfx={toggleSfx} />
-            <button className="topbar-action secondary" data-sound="close" onClick={() => setScreen('modes')}>Modes</button>
-            <a className="nav-btn back-home-btn" href="https://dmnfang.github.io">Home</a>
+            <button className="topbar-action secondary" data-sound="close" onClick={() => setScreen('modes')}>Home</button>
             <FullscreenBtn />
           </div>
         </div>
@@ -363,8 +362,7 @@ export default function App() {
           <span />
           <div className="topbar-right">
             <SoundBtn sfxOn={sfxOn} toggleSfx={toggleSfx} />
-            <button className="topbar-action secondary" data-sound="close" onClick={() => setScreen('modes')}>Modes</button>
-            <a className="nav-btn back-home-btn" href="https://dmnfang.github.io">Home</a>
+            <button className="topbar-action secondary" data-sound="close" onClick={() => setScreen('modes')}>Home</button>
             <FullscreenBtn />
           </div>
         </div>
